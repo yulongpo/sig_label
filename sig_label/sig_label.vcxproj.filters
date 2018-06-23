@@ -36,9 +36,24 @@
     <ClCompile Include="mainWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="qcustomplot.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sig.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CustomPlotZoom.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="mainWindow.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="qcustomplot.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="CustomPlotZoom.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>
@@ -51,5 +66,10 @@
     <QtRcc Include="mainWindow.qrc">
       <Filter>Resource Files</Filter>
     </QtRcc>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="sig.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
