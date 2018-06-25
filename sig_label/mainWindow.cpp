@@ -180,11 +180,7 @@ void mainWindow::openFile() {
 
 	setWholePlotRubbreBand();
 
-
-
-
-
-	double alpha = (maxSpecV - minSpecV) / maxSpecV;
+	double alpha = abs((maxSpecV - minSpecV) / minSpecV);
 
 	QVector<double> x, y, y1;
 	//QVector<QCPBars *> bars, bars1;
@@ -201,14 +197,16 @@ void mainWindow::openFile() {
 		QCPBars *bars = new QCPBars(ui.truePlot->xAxis, ui.truePlot->yAxis);
 		bars->moveAbove(bars1);
 		x.append(res.dFreqMid);
-		y1.append((1 - alpha)*maxSpecV);
 
+		y1.append(res.dSignalLevel); // (1 - alpha)*maxSpecV);
+		//y1.append(-1);
 		bars1->setWidth(res.dBW);
 		bars1->setData(x, y1);
 		bars1->setPen(Qt::NoPen);
 		bars1->setBrush(Qt::NoBrush);
-		y.append(alpha*maxSpecV);
 
+		y.append(-res.dCN); // alpha*maxSpecV)
+		//y.append(-2);
 		bars->setWidth(res.dBW);
 		bars->setData(x, y);
 		bars->setPen(QPen(QColor(255, 0, 0, 100).lighter(130)));
