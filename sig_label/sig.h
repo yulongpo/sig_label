@@ -4,8 +4,11 @@
 //#include <QString>
 #include <string>
 #include <vector>
+#include "myUtil.h"
+#include <QMap>
 
 const unsigned int WAVELENS = 25288;
+
 
 struct WaveResult
 {
@@ -14,6 +17,11 @@ struct WaveResult
 	double dBW;               //载波带宽,单位MHz
 	float dSignalLevel;      //信号电平,单位dBm
 	float dCN;               //载噪比,单位dB
+};
+
+struct labelResult {
+	unsigned int start;
+	unsigned int end;
 };
 
 
@@ -37,7 +45,10 @@ public:
 	};
 
 	bool state = false;
+
 	std::ifstream sigStream;
+	//std::ofstream outStream;
+
 
 	unsigned long allFrameNums = 0;
 	//unsigned long curFrameNum = 1;
@@ -45,7 +56,6 @@ public:
 	sigFrame curFrameInfo;
 
 	void openFile(std::string filePath);
-
 	void readFrame(sigFrame &frame);
 
 

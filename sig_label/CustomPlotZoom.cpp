@@ -1,4 +1,5 @@
 #include "CustomPlotZoom.h"
+#include <iostream>
 
 CustomPlotZoom::CustomPlotZoom(QWidget * parent)
 	: QCustomPlot(parent)
@@ -17,9 +18,17 @@ void CustomPlotZoom::mousePressEvent(QMouseEvent * event)
 		if (event->button() == Qt::RightButton)
 		{
 			mOrigin = event->pos();
+			std::cout << "press: (" << mOrigin.x() << ", " << mOrigin.y() << ")" << std::endl;
 			mRubberBand->setGeometry(QRect(mOrigin, QSize()));
 			mRubberBand->show();
+
+			//P = event->pos();
+
 		}
+	}
+	if (event->button() == Qt::LeftButton) {
+		P = event->pos();
+		std::cout << "press: (" << P.x() << ", " << P.y() << ")" << std::endl;
 	}
 	QCustomPlot::mousePressEvent(event);
 }
@@ -53,3 +62,19 @@ void CustomPlotZoom::mouseReleaseEvent(QMouseEvent * event)
 	}
 	QCustomPlot::mouseReleaseEvent(event);
 }
+
+//void CustomPlotZoom::paintEvent(QPaintEvent * event)
+//{
+//	std::cout << "paint: (" << P.x() << ", " << P.y() << ")" << std::endl;
+//
+//	if (P.isNull())
+//		return;
+//	QCPPainter p;
+//	QPen pen(Qt::red, 8);
+//	p.begin(this);
+//	p.setPen(pen);
+//	p.drawPoint(P);
+//	p.end();
+//
+//	QCustomPlot::paintEvent(event);
+//}

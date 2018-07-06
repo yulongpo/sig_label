@@ -1,4 +1,6 @@
 #include "sig.h"
+//#include <QMap>
+#include <iterator>
 
 Sig::Sig(std::string filePath) :
 	filePath(filePath)
@@ -59,6 +61,8 @@ void Sig::openFile(std::string filePath)
 
 void Sig::readFrame(sigFrame &frame)
 {
+	frame.result.clear();
+
 	sigStream.seekg(sigPos[frame.curFrameNum - 1]);
 	sigStream.read(reinterpret_cast<char*>(&frame.spectrumLength), sizeof(int));
 	sigStream.read(reinterpret_cast<char*>(frame.aveSpectrum), 25288 * sizeof(char));
@@ -68,8 +72,11 @@ void Sig::readFrame(sigFrame &frame)
 	const size_t n = frame.resNums / sizeof(WaveResult);
 	WaveResult *waveRes = new WaveResult[n];
 	sigStream.read(reinterpret_cast<char*>(waveRes), frame.resNums);
+
 	for (int i = 0; i < n; ++i) {
 		frame.result.push_back(waveRes[i]);
 	}
 	delete waveRes;
+
 }
+
