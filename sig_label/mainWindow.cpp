@@ -5,17 +5,10 @@
 #include <algorithm>
 #include <cmath>
 
-
-#ifdef _DEBUG
-	#define PRINT   printf
-#else
-	#define PRINT(...)
-#endif
-
 mainWindow::mainWindow(QWidget *parent)
 	: QMainWindow(parent)
 {
-	std::cout << "start debug" << std::endl;
+	PRINT("start debug\n"); // std::cout << "start debug" << std::endl;
 
 	ui.setupUi(this);
 	wRubberBand = new QRubberBand(QRubberBand::Rectangle, ui.wholePlot);
@@ -142,7 +135,7 @@ void mainWindow::setWholePlotRubbreBand()
 	int yyp1 = ui.wholePlot->yAxis->coordToPixel(minSpecV);
 	int yyp2 = ui.wholePlot->yAxis->coordToPixel(maxSpecV);
 
-	printf("truePlot位置：(%d, %d), (%d, %d)\n", xxp1, yyp1, xxp2, yyp2);
+	PRINT("truePlot位置：(%d, %d), (%d, %d)\n", xxp1, yyp1, xxp2, yyp2);
 
 	wRubberBand->setGeometry(QRect(QPoint(xxp1, yyp2), QPoint(xxp2, yyp1)));
 
@@ -157,7 +150,7 @@ void mainWindow::resizeEvent(QResizeEvent * event)
 		truePlotSize = ui.truePlot->size();
 		setWholePlotRubbreBand();
 
-		std::cout << "尺寸改变！！！" << std::endl;
+		PRINT("尺寸改变！！！\n");
 	}
 }
 
@@ -250,7 +243,7 @@ void mainWindow::setBar(double midx, double width, double min_y, double max_y, b
 			bars1->setBrush(Qt::NoBrush);
 		}
 	}
-	printf("y_bar1, y_bar:(%f, %f)\n", y_bar1, y_bar);
+	PRINT("y_bar1, y_bar:(%f, %f)\n", y_bar1, y_bar);
 
 	QVector<double> x, y;
 	QVector<double> yy;
@@ -285,14 +278,14 @@ void mainWindow::setBars()
 	const QRect zoomRect = lRubberBand->geometry();
 	int xp1, yp1, xp2, yp2;
 	zoomRect.getCoords(&xp1, &yp1, &xp2, &yp2);
-	printf("左键松开: (%d, %d), (%d, %d)\n", xp1, yp1, xp2, yp2);
+	PRINT("左键松开: (%d, %d), (%d, %d)\n", xp1, yp1, xp2, yp2);
 
 	double x1 = ui.truePlot->xAxis->pixelToCoord(xp1);
 	double x2 = ui.truePlot->xAxis->pixelToCoord(xp2);
 	double y1 = ui.truePlot->yAxis->pixelToCoord(yp1);
 	double y2 = ui.truePlot->yAxis->pixelToCoord(yp2);
 
-	printf("坐标对应: (%f, %f), (%f, %f)\n", x1, y1, x2, y2);
+	PRINT("坐标对应: (%f, %f), (%f, %f)\n", x1, y1, x2, y2);
 
 	barInfo barI;
 
@@ -449,14 +442,14 @@ void mainWindow::mousePress(QMouseEvent* mevent)
 	if (mevent->button() == Qt::RightButton)
 	{
 		rubberOrigin = mevent->pos();
-		std::cout << "press: (" << rubberOrigin.x() << ", " << rubberOrigin.y() << ")" << std::endl;
+		PRINT("press: (%d, %d)\n", rubberOrigin.x(), rubberOrigin.y()); // std::cout << "press: (" << rubberOrigin.x() << ", " << rubberOrigin.y() << ")" << std::endl;
 		rubberBand->setGeometry(QRect(rubberOrigin, QSize()));
 		rubberBand->show();
 	}
 
 	if (mevent->button() == Qt::LeftButton && !dragAbel && !barSelected) {
 		lRubberOrigin = mevent->pos();
-		std::cout << "press: (" << lRubberOrigin.x() << ", " << lRubberOrigin.y() << ")" << std::endl;
+		PRINT("press: (%d, %d)\n", lRubberOrigin.x(), lRubberOrigin.y()); //std::cout << "press: (" << lRubberOrigin.x() << ", " << lRubberOrigin.y() << ")" << std::endl;
 		lRubberBand->setGeometry(QRect(lRubberOrigin, QSize()));
 		lRubberBand->show();
 	}
@@ -511,7 +504,7 @@ void mainWindow::mouseRelease(QMouseEvent *mevent)
 		const QRect zoomRect = rubberBand->geometry();
 		int xp1, yp1, xp2, yp2;
 		zoomRect.getCoords(&xp1, &yp1, &xp2, &yp2);
-		printf("mouse release: (%d, %d), (%d, %d)\n", xp1, yp1, xp2, yp2);
+		PRINT("mouse release: (%d, %d), (%d, %d)\n", xp1, yp1, xp2, yp2);
 		if (abs(xp1 - xp2) < 5 || abs(yp1 - yp2) < 5)
 		{
 			rubberBand->hide();
@@ -578,7 +571,7 @@ void mainWindow::graphClicked(QCPAbstractPlottable *plottable, int dataIndex)
 		selectedName = plottable->name();
 
 		barSelected = true;
-		std::cout << barSelected << std::endl;
+		PRINT("barSelected: %d\n", barSelected); // std::cout << barSelected << std::endl;
 	}
 }
 
@@ -591,7 +584,7 @@ void mainWindow::selectionClosed()
 		//QCPPlottableLegendItem *item = ui.truePlot->legend->itemWithPlottable(graph);
 		if (plot->selected())
 		{
-			std::cout << "selectionChanged!" << std::endl;
+			PRINT("selection changed\n"); // std::cout << "selectionChanged!" << std::endl;
 			sc = true;
 			return;
 		}
@@ -599,7 +592,7 @@ void mainWindow::selectionClosed()
 	if(!sc)
 	{
 		barSelected = false;
-		std::cout << barSelected << std::endl;
+		PRINT("barSelected: %d\n", barSelected);  //std::cout << barSelected << std::endl;
 	}
 	//if (barSelected)
 	//	barSelected = false;
@@ -608,7 +601,8 @@ void mainWindow::selectionClosed()
 
 void mainWindow::removeSelectedGraph()
 {
-	std::cout << "slot" << std::endl;
+	PRINT("slot\n"); // std::cout << "slot" << std::endl;
+
 	if (ui.truePlot->selectedPlottables().size() > 0)
 	{
 		mapBarInfo.remove(ui.truePlot->selectedPlottables().first()->name()); //删除相对应的bar

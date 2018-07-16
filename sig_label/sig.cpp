@@ -15,21 +15,21 @@ void Sig::openFile(std::string filePath)
 	Sig::filePath = filePath;
 	sigStream.open(filePath, std::ios::binary);
 	if (!sigStream) {
-		std::cout << "STREAM NOT OK!" << std::endl;
+		PRINT("STREAM NOT OK!\n"); // std::cout << "STREAM NOT OK!" << std::endl;
 		state = false;
 		allFrameNums = 0;
 		return;
 	}
 
-	std::cout << "STREAM OK!" << std::endl;
+	PRINT("STREAM OK!\n"); // std::cout << "STREAM OK!" << std::endl;
 	sigStream.read(reinterpret_cast<char*>(&waveLen), sizeof(int));
 	if (waveLen != 50576) {
 		state = false;
-		std::cout << "WAVELEN: " << waveLen << std::endl;
+		PRINT("WAVELEN: %d\n", waveLen); // std::cout << "WAVELEN: " << waveLen << std::endl;
 		return;
 	}
 
-	std::cout << "打开成功！" << std::endl;
+	PRINT("打开成功！\n"); // cout << "打开成功！" << std::endl;
 	sigStream.seekg(0, SEEK_END);
 	end = sigStream.tellg();
 	sigStream.seekg(0);
