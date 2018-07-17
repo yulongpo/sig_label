@@ -21,9 +21,9 @@ mainWindow::mainWindow(QWidget *parent)
 
 	ui.fileLabel->clear();
 	ui.truePlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes |
-									QCP::iSelectLegend | QCP::iSelectPlottables);
+									QCP::iSelectLegend | QCP::iSelectPlottables); //
 
-	// ui.truePlot->setCursor(Qt::OpenHandCursor); //手型
+	 //ui.truePlot->setCursor(Qt::OpenHandCursor); //手型
 
 
 	connect(ui.fileSelectBtn, SIGNAL(clicked()), this, SLOT(openFile()));
@@ -45,14 +45,15 @@ mainWindow::mainWindow(QWidget *parent)
 
 
 	//连接鼠标事件发出的信号，实现绑定
-	connect(ui.truePlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheel()));
+	connect(ui.truePlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheel(QWheelEvent*)));
 	connect(ui.truePlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePress(QMouseEvent*)));
 	connect(ui.truePlot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(mouseMove(QMouseEvent*)));
 	connect(ui.truePlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(mouseRelease(QMouseEvent*)));
 
 	connect(ui.zoomResetMenu, SIGNAL(aboutToShow()), this, SLOT(slotBtn()));
 
-	connect(ui.labelMenu, SIGNAL(aboutToShow()), this, SLOT(test_drag()));
+	//connect(ui.labelMenu, SIGNAL(aboutToShow()), this, SLOT(test_drag()));
+	connect(this, SIGNAL(change2label()), this, SLOT(test_drag()));
 
 	connect(ui.deletMenu, SIGNAL(aboutToShow()), this, SLOT(removeSelectedGraph()));
 
@@ -61,6 +62,11 @@ mainWindow::mainWindow(QWidget *parent)
 	connect(ui.truePlot, SIGNAL(selectionChangedByUser()), this, SLOT(selectionClosed()));
 
 	// std::cout << barSelected << std::endl;
+
+
+	ui.truePlot->setContextMenuPolicy(Qt::CustomContextMenu);
+	connect(ui.truePlot, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuRequest(QPoint)));
+
 }
 
 mainWindow::~mainWindow()
@@ -420,17 +426,39 @@ void mainWindow::saveFile()
 
 }
 
-void mainWindow::mouseWheel()
+void mainWindow::mouseWheel(QWheelEvent* mevent)
 {
 	 //if an axis is selected, only allow the direction of that axis to be zoomed
 	 //if no axis is selected, both directions may be zoomed
+	QPoint pos = mevent->pos();
+
+	PRINT("鼠标滑轮位置: (%d, %d), 坐标位置: (%f, %f)\n", pos.x(), pos.y(),
+		ui.truePlot->xAxis->pixelToCoord(pos.x()), ui.truePlot->yAxis->pixelToCoord(pos.y()));
+
+	if (freqs.isEmpty())
+	{
+		if (ui.truePlot->xAxis->pixelToCoord(pos.x()) > 0)
+			ui.truePlot->axisRect()->setRangeZoom(ui.truePlot->xAxis->orientation());
+		else
+			ui.truePlot->axisRect()->setRangeZoom(ui.truePlot->yAxis->orientation());
+	}
+	else {
+		auto x1 =ui.truePlot->xAxis->range().lower;
+
+		PRINT("X1: [%f]\n", x1);
+		if (ui.truePlot->xAxis->pixelToCoord(pos.x()) >  x1)
+
+			ui.truePlot->axisRect()->setRangeZoom(ui.truePlot->xAxis->orientation());
+		else
+			ui.truePlot->axisRect()->setRangeZoom(ui.truePlot->yAxis->orientation());
+	}
 	
-	if (ui.truePlot->xAxis->selectedParts().testFlag(QCPAxis::spAxis))
-		ui.truePlot->axisRect()->setRangeZoom(ui.truePlot->xAxis->orientation());
-	else if (ui.truePlot->yAxis->selectedParts().testFlag(QCPAxis::spAxis))
-		ui.truePlot->axisRect()->setRangeZoom(ui.truePlot->yAxis->orientation());
-	else
-		ui.truePlot->axisRect()->setRangeZoom(Qt::Horizontal | Qt::Vertical);
+	//if (ui.truePlot->xAxis->selectedParts().testFlag(QCPAxis::spAxis))
+	//	ui.truePlot->axisRect()->setRangeZoom(ui.truePlot->xAxis->orientation());
+	//else if (ui.truePlot->yAxis->selectedParts().testFlag(QCPAxis::spAxis))
+	//	ui.truePlot->axisRect()->setRangeZoom(ui.truePlot->yAxis->orientation());
+	//else
+	//	ui.truePlot->axisRect()->setRangeZoom(Qt::Horizontal | Qt::Vertical);
 
 	setWholePlotRubbreBand();
 }
@@ -439,13 +467,7 @@ void mainWindow::mouseWheel()
 // 鼠标按下槽函数
 void mainWindow::mousePress(QMouseEvent* mevent)
 {
-	if (mevent->button() == Qt::RightButton)
-	{
-		rubberOrigin = mevent->pos();
-		PRINT("press: (%d, %d)\n", rubberOrigin.x(), rubberOrigin.y()); // std::cout << "press: (" << rubberOrigin.x() << ", " << rubberOrigin.y() << ")" << std::endl;
-		rubberBand->setGeometry(QRect(rubberOrigin, QSize()));
-		rubberBand->show();
-	}
+	
 
 	if (mevent->button() == Qt::LeftButton && !dragAbel && !barSelected) {
 		lRubberOrigin = mevent->pos();
@@ -453,6 +475,14 @@ void mainWindow::mousePress(QMouseEvent* mevent)
 		lRubberBand->setGeometry(QRect(lRubberOrigin, QSize()));
 		lRubberBand->show();
 	}
+	else if (mevent->button() == Qt::LeftButton && regionZoom)
+	{
+		rubberOrigin = mevent->pos();
+		PRINT("press: (%d, %d)\n", rubberOrigin.x(), rubberOrigin.y()); // std::cout << "press: (" << rubberOrigin.x() << ", " << rubberOrigin.y() << ")" << std::endl;
+		rubberBand->setGeometry(QRect(rubberOrigin, QSize()));
+		rubberBand->show();
+	}
+
 	setWholePlotRubbreBand();
 
 	//Todo：移动一个Bar
@@ -471,6 +501,7 @@ void mainWindow::mouseMove(QMouseEvent *mevent)
 	if (lRubberBand->isVisible())
 		lRubberBand->setGeometry(QRect(lRubberOrigin, mevent->pos()).normalized());
 	setWholePlotRubbreBand();
+
 
 	//if (!barOrigin.isNull()) {
 	//	if (ui.truePlot->selectedPlottables().size() > 0)
@@ -522,10 +553,19 @@ void mainWindow::mouseRelease(QMouseEvent *mevent)
 		ui.truePlot->replot();
 
 		setWholePlotRubbreBand();
+		regionZoom = false;
+		ui.truePlot->setCursor(Qt::ArrowCursor);
+		ui.truePlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes |
+			QCP::iSelectLegend | QCP::iSelectPlottables);
 	}
+
 	if (lRubberBand->isVisible()) {
 		setBars();
 		lRubberBand->hide();
+		dragAbel = true;
+		ui.truePlot->setCursor(Qt::ArrowCursor);
+		ui.truePlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes |
+			QCP::iSelectLegend | QCP::iSelectPlottables);
 	}
 	//if (barSelected) {
 	//	barOrigin = QPoint();
@@ -542,9 +582,23 @@ void mainWindow::slotBtn()
 	
 }
 
+
+void mainWindow::contextMenuRequest(QPoint pos)
+{
+	QMenu *menu = new QMenu(this);
+	menu->setAttribute(Qt::WA_DeleteOnClose);
+
+	menu->addAction("label", this, SLOT(test_drag()));
+	menu->addAction("regionZoom", this, SLOT(setRegionZoom()));
+
+	menu->popup(ui.truePlot->mapToGlobal(pos));
+}
+
 void mainWindow::test_drag()
 {
 	if (dragAbel) {
+		ui.truePlot->setCursor(Qt::CrossCursor);
+		update();
 		dragAbel = false;
 		
 		ui.truePlot->setInteractions(QCP::iRangeZoom | QCP::iSelectAxes |
@@ -552,10 +606,19 @@ void mainWindow::test_drag()
 	}
 	else {
 		dragAbel = true;
+		ui.truePlot->setCursor(Qt::ArrowCursor);
+		
 		ui.truePlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes |
 			QCP::iSelectLegend | QCP::iSelectPlottables);
 	}
-	
+}
+
+void mainWindow::setRegionZoom()
+{
+	regionZoom = true;
+	ui.truePlot->setCursor(Qt::SizeAllCursor);
+	ui.truePlot->setInteractions(QCP::iRangeZoom | QCP::iSelectAxes |
+		QCP::iSelectLegend | QCP::iSelectPlottables);
 }
 
 void mainWindow::graphClicked(QCPAbstractPlottable *plottable, int dataIndex)
@@ -753,3 +816,7 @@ size_t my_binary_search(QVector<double> vec, double x, int pr)
 		return tmp;
 }
 
+void mainWindow::paintEvent(QPaintEvent *event) {
+	//QMessageBox::warning(this, QString::fromLocal8Bit("错误"),
+	//	QString::fromLocal8Bit("1233333！！！"));
+}

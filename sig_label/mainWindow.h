@@ -44,6 +44,7 @@ private:
 	QPoint barOrigin;
 
 	QPoint P;
+	
 
 	void plotSpec(QVector<double>x, QVector<double>y, int k, QColor color, QString name);
 	void setWholePlotRubbreBand();
@@ -53,7 +54,6 @@ private:
 	void setBar(barInfo, bool rebplot = true);
 	//void setBarMid(double midx, double width, double ymin,	double ymax, bool);
 	void setBars();
-
 	void writeFile(std::string fileName, QMap<QString, barInfo> mapBarInfo, QVector<double> freqs);
 	
 	bool dragAbel = true;
@@ -67,32 +67,49 @@ private:
 	QString saveFileName_tmp;
 	bool saveState = false;
 
+	bool regionZoom = false;
+
+
+
+
+public slots:
+	void paintEvent(QPaintEvent *event);
 
 signals:
 	void sendPageNum(unsigned long pageNum);
+	void sendMousePos(QPointF);
+
+	void change2label();
 
 private slots:
 	void openFile();
 	void saveFile();
 
-	void mouseWheel();
+	void mouseWheel(QWheelEvent* mevent);
 	void mousePress(QMouseEvent * mevent);
 
 	void mouseMove(QMouseEvent * mevent);
 
 	void mouseRelease(QMouseEvent * mevent);
-	//void paintEvent(QPaintEvent *event);
 
 	void slotBtn();
 
+	void contextMenuRequest(QPoint pos);
+
 	void test_drag();
+	void setRegionZoom();
+
 	void graphClicked(QCPAbstractPlottable *plottable, int dataIndex);
 	void selectionClosed();
 	void removeSelectedGraph();
+
 
 	void openPage(unsigned long pageNum);
 	void firstPage();
 	void prevPage();
 	void nextPage();
 	void gotoPage();
+
+
+
 };
